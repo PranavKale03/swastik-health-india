@@ -637,7 +637,7 @@ class DoctorList extends StatelessWidget {
                   },
                   icon: const Icon(Icons.delete),
                   tooltip: "Delete",
-                ),
+                ), 
               ],
             )
           : null,
@@ -1069,7 +1069,7 @@ class AllDoctorTech extends StatelessWidget {
               color: kFontColorPallets[0],
             ),
             children: [
-              const TextSpan(text: "All Lab Technicians"),
+              const TextSpan(text: "All Doctors"),
               TextSpan(
                 text: "($totalMember)",
                 style: TextStyle(
