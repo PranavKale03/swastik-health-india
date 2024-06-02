@@ -42,7 +42,7 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
     String formattedDate = now.toIso8601String();
     try {
       final url = Uri.parse(
-          'http://localhost:5500/api/company/create'); // Replace with your API URL
+          'https://swastik-health-india-api.onrender.com/api/company/create'); // Replace with your API URL
       final jsonData = {
         'name': _companyName.text,
         'email': _companyemail.text,

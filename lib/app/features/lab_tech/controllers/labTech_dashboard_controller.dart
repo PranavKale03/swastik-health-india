@@ -14,7 +14,7 @@ class LabTechDashboardController extends GetxController {
 
     Future<List<CompanyData>> fetchCompanies() async {
     final response =
-        await http.get(Uri.parse('http://localhost:5500/api/company/getAll'));
+        await http.get(Uri.parse('https://swastik-health-india-api.onrender.com/api/company/getAll'));
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);

@@ -12,7 +12,7 @@ class AdminDashboardController extends GetxController {
 
   Future<List<CompanyData>> fetchCompanies() async {
     final response =
-        await http.get(Uri.parse('http://localhost:5500/api/company/getAll'));
+        await http.get(Uri.parse('https://swastik-health-india-api.onrender.com/api/company/getAll'));
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
@@ -26,7 +26,7 @@ class AdminDashboardController extends GetxController {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String id = pref.getString('id').toString();
     final response = await http
-        .get(Uri.parse('http://localhost:5500/api/admin/getuser?id=$id'));
+        .get(Uri.parse('https://swastik-health-india-api.onrender.com/api/admin/getuser?id=$id'));
     if (response.statusCode == 200) {
       final responceData = json.decode(response.body);
       final List<dynamic> jsonData = responceData['lab_technicians'];
@@ -36,20 +36,20 @@ class AdminDashboardController extends GetxController {
       throw Exception('Failed to load admins');
     }
   }
-    Future<List<LabTechData>> fetchDoctors() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    String id = pref.getString('id').toString();
+
+
+ Future<List<DoctorData>> fetchDoctors() async {
     final response = await http
-        .get(Uri.parse('http://localhost:5500/api/admin/getuser?id=$id'));
+        .get(Uri.parse('https://swastik-health-india-api.onrender.com/api/doctor/getall'));
     if (response.statusCode == 200) {
-      final responceData = json.decode(response.body);
-      final List<dynamic> jsonData = responceData['lab_technicians'];
-
-      return jsonData.map((data) => LabTechData.fromJson(data)).toList();
+      final responseData = json.decode(response.body);
+      final List<dynamic> jsonData = responseData;
+      return jsonData.map((data) => DoctorData.fromJson(data)).toList();
     } else {
-      throw Exception('Failed to load admins');
+      throw Exception('Failed to load Doctors');
     }
   }
+
 
 
   Future<_Profile> getProfil() async {

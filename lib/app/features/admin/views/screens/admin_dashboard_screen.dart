@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:swastik_health_india/app/auth/login_screen.dart';
 import 'package:swastik_health_india/app/constans/app_constants.dart';
 import 'package:swastik_health_india/app/features/admin/models/company.dart';
+import 'package:swastik_health_india/app/features/admin/models/doctor.dart';
 import 'package:swastik_health_india/app/features/admin/views/screens/add_LabTech_screen.dart';
 import 'package:swastik_health_india/app/features/admin/views/screens/employee_management.dart';
 import 'package:swastik_health_india/app/features/dashboard/controllers/menu_controller.dart';
@@ -527,7 +528,6 @@ class AdminDashboardScreen extends GetView<AdminDashboardController> {
     );
   }
 
-  
   Widget _buildDoctorContent(BuildContext context) {
     return SingleChildScrollView(
       child: ResponsiveBuilder(
@@ -565,7 +565,7 @@ class AdminDashboardScreen extends GetView<AdminDashboardController> {
                 child: Column(
                   children: [
                     const SizedBox(height: kSpacing * (kIsWeb ? 1 : 2)),
-                    FutureBuilder<List<LabTechData>>(
+                    FutureBuilder<List<DoctorData>>(
                         future: controller.fetchDoctors(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
@@ -575,10 +575,10 @@ class AdminDashboardScreen extends GetView<AdminDashboardController> {
                             return Text('Error: ${snapshot.error}');
                           } else {
                             // ignore: non_constant_identifier_names
-                            final LabTech = snapshot.data!;
+                            final doctor = snapshot.data!;
                             return _buildDoctorList(
                               context: context,
-                              data: LabTech.reversed.toList(),
+                              data: doctor.reversed.toList(),
                             );
                           }
                         }),
@@ -610,22 +610,29 @@ class AdminDashboardScreen extends GetView<AdminDashboardController> {
                 child: Column(
                   children: [
                     const SizedBox(height: kSpacing / 2),
-                    FutureBuilder<List<LabTechData>>(
-                        future: controller.fetchLabTechnicians(),
+                    FutureBuilder<List<DoctorData>>(
+                        future: controller.fetchDoctors(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
+                            return const Center(child: CircularProgressIndicator());
                           } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
+                            return Center(
+                                child: Text('Error: ${snapshot.error}'));
                           } else {
-                            final companies = snapshot.data!;
-                            return _buildLabTechList(
-                              context: context,
-                              data: companies.reversed.toList(),
+                            final doctors = snapshot.data!;
+                            return ListView.builder(
+                              itemCount: doctors.length,
+                              itemBuilder: (context, index) {
+                                final doctor = doctors[index];
+                                return ListTile(
+                                  title: Text(doctor.name),
+                                  subtitle: Text(doctor.email),
+                                );
+                              },
                             );
                           }
-                        }),
+                        })
                   ],
                 ),
               )
@@ -830,9 +837,7 @@ class AdminDashboardScreen extends GetView<AdminDashboardController> {
     );
   }
 
-  
-  Widget _buildDoctorList(
-      {required List<LabTechData> data, required context}) {
+  Widget _buildDoctorList({required List<DoctorData> data, required context}) {
     return Material(
       elevation: 1,
       borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -846,15 +851,15 @@ class AdminDashboardScreen extends GetView<AdminDashboardController> {
         child: Column(children: [
           Padding(
             padding: const EdgeInsets.all(kSpacing),
-            child: AllLabTech(
+            child: AllDoctorTech(
               totalMember: data.length,
             ),
           ),
           const SizedBox(height: kSpacing / 2),
           ...data
               .map(
-                (e) => LabTechList(
-                  labtech: e,
+                (e) => DoctorList(
+                  Doctor: e,
                   onPressedNotification: () {},
                 ),
               )

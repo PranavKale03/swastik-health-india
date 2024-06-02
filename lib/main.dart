@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
       'Master Admin': const DashboardScreen(),
       'Admin': const AdminDashboardScreen(),
       'Lab Technician': const LabTechDashboardScreen(),
-
+      'Doctor': const DoctorDashboardScreen(),
       // Add more roles and corresponding screens as needed
     };
 

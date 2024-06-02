@@ -57,7 +57,7 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     // print("bbbbbbbbbbbbbbbbbbbbb"+pref.getString('id').toString());
     try {
-      final url = Uri.parse('http://localhost:5500/api/labtech/create');
+      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/create');
       final jsonData = {
         'name': _drName.text,
         'email': _dremail.text,
@@ -117,7 +117,7 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
   }
 
   Future<void> assignCompaniesToLabTech(String labTechId) async {
-    final url = Uri.parse('http://localhost:5500/api/labtech/assign');
+    final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/assign');
     for (var company in _assignedCompanies) {
       final jsonData = {
         'company_id': company['company_id'],
@@ -700,7 +700,7 @@ class _ManageLabTechDialogState extends State<ManageLabTechDialog> {
     for (String companyId in _selectedCompanies) {
       try {
         final response = await http.get(Uri.parse(
-            'http://localhost:5500/api/company/getcompany?id=$companyId'));
+            'https://swastik-health-india-api.onrender.com/api/company/getcompany?id=$companyId'));
         if (response.statusCode == 200) {
           final responseData = json.decode(response.body);
           companies.add(CompanyData.fromJson(responseData));
@@ -893,7 +893,7 @@ class _ManageLabTechDialogState extends State<ManageLabTechDialog> {
         ])));
   }
   Future<void> assignCompaniesToLabTech(String labTechId) async {
-    final url = Uri.parse('http://localhost:5500/api/labtech/assign');
+    final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/assign');
     // print(_assignedCompanies);
     for (var company in _assignedCompanies) {
       final jsonData = {

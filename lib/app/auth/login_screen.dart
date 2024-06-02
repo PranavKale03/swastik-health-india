@@ -32,18 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
-    // RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    // if (!emailRegex.hasMatch(emailController.text)) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(
-    //       content: Text('Please enter a valid email'),
-    //       backgroundColor: Colors.red,
-    //     ),
-    //   );
-    //   return;
-    // }
 
-    // Validation for password
     if (passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -67,49 +56,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
       String uri;
       if (selectedRole == 'Master Admin') {
-        uri = 'http://localhost:5500/api/master/login';
+        uri = 'https://swastik-health-india-api.onrender.com/api/master/login';
       } else if (selectedRole == 'Admin') {
-        // Get.to(const AdminDashboardScreen());
-        uri = 'http://localhost:5500/api/admin/login';
+        uri = 'https://swastik-health-india-api.onrender.com/api/admin/login';
       } else if (selectedRole == 'Lab Technician') {
-        // Get.to(const AdminDashboardScreen());
-        uri = 'http://localhost:5500/api/labtech/login';
+        uri = 'https://swastik-health-india-api.onrender.com/api/labtech/login';
       } else if (selectedRole == 'Doctor') {
-        // Get.to(const AdminDashboardScreen());
-        uri = 'http://localhost:5500/api/doctor/login';
+        uri = 'https://swastik-health-india-api.onrender.com/api/doctor/login';
       } else {
-        uri = 'http://localhost:5500/api/login';
+        uri = 'https://swastik-health-india-api.onrender.com/api/login';
       }
-      // prefs.setString('role', selectedRole);
+
       final url = Uri.parse(uri);
 
       final jsonData = {
         'email': emailController.text,
         'password': passwordController.text,
       };
-      // print(jsonData);
+
       final response = await http.post(
         url,
         body: json.encode(jsonData),
         headers: {'Content-Type': 'application/json'},
       );
+
       if (response.statusCode == 200) {
-        if (response.statusCode == 200) {
-          if (selectedRole == "Master Admin") {
-            Get.to(const DashboardScreen());
-          } else if (selectedRole == "Admin") {
-            Get.to(const AdminDashboardScreen());
-          } else if (selectedRole == "Lab Technician") {
-            Get.to(const LabTechDashboardScreen());
-          } else if (selectedRole == "Doctor") {
-            Get.to(DoctorDashboardController());
-          }
-        }
         final responseData = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Login Successfull...(:',
+              'Login Successful...(:',
               style: TextStyle(color: Colors.white),
             ),
             backgroundColor: Colors.blue,
@@ -118,20 +94,23 @@ class _LoginScreenState extends State<LoginScreen> {
         prefs.setBool('isLoggedIn', true);
         prefs.setString('role', selectedRole);
         prefs.setString('id', responseData['user']['_id']);
-        print(responseData['user']['_id']);
         prefs.setString('name', responseData['user']['name']);
         prefs.setString('email', responseData['user']['email']);
         prefs.setString('mobile', responseData['user']['mobile']);
 
-        // print("---------------------------------------------");
-        // print(prefs.getString("name"));
-        // print(prefs.getString("role"));
-        // print(prefs.getString("email"));
-        // print(prefs.getString("mobile"));
+        if (selectedRole == "Master Admin") {
+          Get.to(const DashboardScreen());
+        } else if (selectedRole == "Admin") {
+          Get.to(const AdminDashboardScreen());
+        } else if (selectedRole == "Lab Technician") {
+          Get.to(const LabTechDashboardScreen());
+        } else if (selectedRole == "Doctor") {
+          Get.to(const DoctorDashboardScreen());
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(json.decode(response.body)[0]),
+            content: Text(json.decode(response.body)['message']),
             backgroundColor: Colors.red,
           ),
         );
@@ -143,7 +122,6 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: Colors.red,
         ),
       );
-      // Handle error here
     }
   }
 
@@ -152,7 +130,6 @@ class _LoginScreenState extends State<LoginScreen> {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      // backgroundColor:  const Color(0xffF6F6F6),
       body: SizedBox(
         height: height,
         width: width,
@@ -168,13 +145,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: const Color.fromRGBO(0, 91, 224, 1),
                       child: Center(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                              20), // Adjust the radius as needed
+                          borderRadius: BorderRadius.circular(20),
                           child: Image.asset(
                             ImageRasterPath.swastiklogo,
                             height: 200,
                             width: 400,
-                            fit: BoxFit.cover, // Adjust the fit as needed
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
@@ -187,7 +163,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     horizontal: ResponsiveWidget.isSmallScreen(context)
                         ? height * 0.032
                         : height * 0.12),
-                // color: const Color.fromRGBO(246, 246, 246, 1),
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.only(bottom: 40.0),
                   child: Column(
@@ -205,7 +180,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: ralewayStyle.copyWith(
                           fontSize: 12.0,
                           fontWeight: FontWeight.w400,
-                          // color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 16),

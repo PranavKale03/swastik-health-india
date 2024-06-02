@@ -96,7 +96,7 @@ class _CompleteEmployeeFormState extends State<CompleteEmployeeForm> {
     if (_formKey.currentState?.validate() ?? false) {
       try {
         var response = await http.post(
-          Uri.parse('http://localhost:5500/api/employee$uri'),
+          Uri.parse('https://swastik-health-india-api.onrender.com/api/employee$uri'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },

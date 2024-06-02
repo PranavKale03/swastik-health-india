@@ -57,7 +57,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     // print("bbbbbbbbbbbbbbbbbbbbb"+pref.getString('id').toString());
     try {
-      final url = Uri.parse('http://localhost:5500/api/doctor/create');
+      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/doctor/create');
       final jsonData = {
         'name': _drName.text,
         'email': _dremail.text,
@@ -117,11 +117,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   }
 
   Future<void> assignCompaniesToLabTech(String DoctorId) async {
-    final url = Uri.parse('http://localhost:5500/api/labtech/assign');
+    final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/doctor/assign');
     for (var company in _assignedCompanies) {
       final jsonData = {
         'company_id': company['company_id'],
-        'lab_technician_id': DoctorId,
+        'doctor_id': DoctorId,
       };
 
       final response = await http.post(
@@ -700,7 +700,7 @@ class _ManageDoctorDialogState extends State<ManageDoctorDialog> {
     for (String companyId in _selectedCompanies) {
       try {
         final response = await http.get(Uri.parse(
-            'http://localhost:5500/api/company/getcompany?id=$companyId'));
+            'https://swastik-health-india-api.onrender.com/api/company/getcompany?id=$companyId'));
         if (response.statusCode == 200) {
           final responseData = json.decode(response.body);
           companies.add(CompanyData.fromJson(responseData));
@@ -893,7 +893,7 @@ class _ManageDoctorDialogState extends State<ManageDoctorDialog> {
         ])));
   }
   Future<void> assignCompaniesToLabTech(String labTechId) async {
-    final url = Uri.parse('http://localhost:5500/api/labtech/assign');
+    final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/assign');
     // print(_assignedCompanies);
     for (var company in _assignedCompanies) {
       final jsonData = {

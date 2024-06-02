@@ -52,7 +52,7 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String? id = pref.getString('id');
     try {
-      final url = Uri.parse('http://localhost:5500/api/labtech/getuser?id=$id');
+      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/doctor/getuser?id=$id');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -95,7 +95,7 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
   Future<void> fetchEmployeesByCompanyId(String companyId) async {
     try {
       final url = Uri.parse(
-          'http://localhost:5500/api/company/getcompany?id=$companyId');
+          'https://swastik-health-india-api.onrender.com/api/company/getcompany?id=$companyId');
       final response =
           await http.get(url, headers: {'Content-Type': 'application/json'});
       if (response.statusCode == 200) {

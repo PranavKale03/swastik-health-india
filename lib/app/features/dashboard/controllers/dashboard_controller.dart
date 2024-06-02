@@ -25,7 +25,7 @@ class DashboardController extends GetxController {
 
   Future<List<AdminData>> fetchAdmins() async {
     final response =
-        await http.get(Uri.parse('http://localhost:5500/api/admin/getall'));
+        await http.get(Uri.parse('https://swastik-health-india-api.onrender.com/api/admin/getall'));
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);

@@ -66,7 +66,7 @@ class _CompanySelectionState extends State<CompanySelection> {
     for (var form in _employeeForms) {
       final newEmployee = form.getEmployeeData();
       final newEmployeeJson = json.encode(newEmployee);
-      final url = Uri.parse('http://localhost:5500/api/employee/create');
+      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/employee/create');
       try {
         final response = await http.post(url,
             body: newEmployeeJson,
@@ -99,7 +99,7 @@ class _CompanySelectionState extends State<CompanySelection> {
   Future<void> fetchAllCompanies() async {
     try {
       final url = Uri.parse(
-          'http://localhost:5500/api/company/getAll'); // Replace with your API URL
+          'https://swastik-health-india-api.onrender.com/api/company/getAll'); // Replace with your API URL
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -130,7 +130,7 @@ class _CompanySelectionState extends State<CompanySelection> {
   Future<void> fetchEmployeesByCompanyId(String companyId) async {
     try {
       final url = Uri.parse(
-          'http://localhost:5500/api/company/getcompany?id=$companyId');
+          'https://swastik-health-india-api.onrender.com/api/company/getcompany?id=$companyId');
       final response =
           await http.get(url, headers: {'Content-Type': 'application/json'});
       if (response.statusCode == 200) {
@@ -171,7 +171,7 @@ class _CompanySelectionState extends State<CompanySelection> {
 
   Future<void> addEmployeeToCompany(String companyId, String employeeId) async {
     try {
-      final url = Uri.parse('http://localhost:5500/api/company/addemployee');
+      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/company/addemployee');
       final response = await http.post(url,
           body:
               json.encode({'company_id': companyId, 'employee_id': employeeId}),

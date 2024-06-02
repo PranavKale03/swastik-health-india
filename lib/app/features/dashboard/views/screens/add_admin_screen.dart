@@ -34,7 +34,7 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
     String formattedDate = now.toIso8601String();
    
     try {
-      final url = Uri.parse('http://localhost:5500/api/admin/create');
+      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/admin/create');
       final jsonData = {
         'name': _fullName,
         'email': _email,
@@ -294,7 +294,7 @@ class AdminList extends StatelessWidget {
     Key? key,
   }) : super(key: key);
    void _deleteAdmin(BuildContext context, String adminId) async {
-      final url = Uri.parse('http://localhost:5500/api/admin/delete');
+      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/admin/delete');
       try {
         final response = await http.post(url,body: {"_id":adminId});
         if (response.statusCode == 200) {
