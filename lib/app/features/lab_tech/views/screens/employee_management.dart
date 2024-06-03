@@ -52,7 +52,7 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String? id = pref.getString('id');
     try {
-      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/doctor/getuser?id=$id');
+      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/getuser?id=$id');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

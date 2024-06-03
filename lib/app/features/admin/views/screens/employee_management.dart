@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:swastik_health_india/app/config/themes/app_theme.dart';
 import 'package:swastik_health_india/app/constans/app_constants.dart';
 import 'package:swastik_health_india/app/features/admin/models/company.dart';
@@ -63,19 +64,24 @@ class _CompanySelectionState extends State<CompanySelection> {
   }
 
   void _saveEmployees(BuildContext context) async {
+    showLoadingDialog(context);
     for (var form in _employeeForms) {
       final newEmployee = form.getEmployeeData();
       final newEmployeeJson = json.encode(newEmployee);
-      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/employee/create');
+      final url = Uri.parse(
+          'https://swastik-health-india-api.onrender.com/api/employee/create');
       try {
         final response = await http.post(url,
             body: newEmployeeJson,
             headers: {'Content-Type': 'application/json'});
         if (response.statusCode == 200) {
+          dismissLoadingDialog(context);
           final employeeId = json.decode(response.body)['_id'];
           addEmployeeToCompany(_selectedCompany!, employeeId);
           _resetForm();
         } else {
+          dismissLoadingDialog(context);
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -85,6 +91,8 @@ class _CompanySelectionState extends State<CompanySelection> {
           );
         }
       } catch (error) {
+        dismissLoadingDialog(context);
+
         // print(error.toString());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -97,18 +105,24 @@ class _CompanySelectionState extends State<CompanySelection> {
   }
 
   Future<void> fetchAllCompanies() async {
+    // showLoadingDialog(context);
+
     try {
       final url = Uri.parse(
           'https://swastik-health-india-api.onrender.com/api/company/getAll'); // Replace with your API URL
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
+        // dismissLoadingDialog(context);
+
         final List<dynamic> companyList = json.decode(response.body);
         setState(() {
           _companies =
               companyList.map((json) => CompanyData.fromJson(json)).toList();
         });
       } else {
+        // dismissLoadingDialog(context);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -118,6 +132,8 @@ class _CompanySelectionState extends State<CompanySelection> {
         );
       }
     } catch (e) {
+      dismissLoadingDialog(context);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to load companies. Exception: $e'),
@@ -128,12 +144,16 @@ class _CompanySelectionState extends State<CompanySelection> {
   }
 
   Future<void> fetchEmployeesByCompanyId(String companyId) async {
+    showLoadingDialog(context);
+
     try {
       final url = Uri.parse(
           'https://swastik-health-india-api.onrender.com/api/company/getcompany?id=$companyId');
       final response =
           await http.get(url, headers: {'Content-Type': 'application/json'});
       if (response.statusCode == 200) {
+        dismissLoadingDialog(context);
+
         final dynamic companyData = json.decode(response.body);
         if (companyData != null) {
           final List<dynamic> employeeList = companyData['employees'];
@@ -143,6 +163,8 @@ class _CompanySelectionState extends State<CompanySelection> {
                 .toList();
           });
         } else {
+          dismissLoadingDialog(context);
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('No employees found for this company.'),
@@ -151,6 +173,8 @@ class _CompanySelectionState extends State<CompanySelection> {
           );
         }
       } else {
+        dismissLoadingDialog(context);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -160,6 +184,8 @@ class _CompanySelectionState extends State<CompanySelection> {
         );
       }
     } catch (e) {
+      dismissLoadingDialog(context);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to load employees. Exception: $e'),
@@ -170,14 +196,19 @@ class _CompanySelectionState extends State<CompanySelection> {
   }
 
   Future<void> addEmployeeToCompany(String companyId, String employeeId) async {
+    showLoadingDialog(context);
+
     try {
-      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/company/addemployee');
+      final url = Uri.parse(
+          'https://swastik-health-india-api.onrender.com/api/company/addemployee');
       final response = await http.post(url,
           body:
               json.encode({'company_id': companyId, 'employee_id': employeeId}),
           headers: {'Content-Type': 'application/json'});
 
       if (response.statusCode == 200) {
+        dismissLoadingDialog(context);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Employee added to the company successfully'),
@@ -191,6 +222,8 @@ class _CompanySelectionState extends State<CompanySelection> {
           fetchEmployeesByCompanyId(_selectedCompany!);
         });
       } else {
+        dismissLoadingDialog(context);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -200,6 +233,8 @@ class _CompanySelectionState extends State<CompanySelection> {
         );
       }
     } catch (e) {
+      dismissLoadingDialog(context);
+
       // print(e.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -211,6 +246,8 @@ class _CompanySelectionState extends State<CompanySelection> {
   }
 
   void _addEmployeeForm() {
+    showLoadingDialog(context);
+
     setState(() {
       _isFormOpened = true;
       _employeeForms.add(EmployeeForm(
@@ -220,6 +257,34 @@ class _CompanySelectionState extends State<CompanySelection> {
         },
       ));
     });
+    dismissLoadingDialog(context);
+  }
+
+void showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Prevents user from dismissing the dialog
+    builder: (BuildContext context) {
+      return Dialog(
+        backgroundColor: Colors.transparent, // Make the background transparent
+        elevation: 0, // Remove shadow
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Lottie.asset(
+              'assets/lotties/loader.json',
+              height: 250,
+              width: 250,
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+  void dismissLoadingDialog(BuildContext context) {
+    Navigator.pop(context); // Close the dialog
   }
 
   @override

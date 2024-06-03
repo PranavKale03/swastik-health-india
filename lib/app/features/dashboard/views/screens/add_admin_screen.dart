@@ -7,6 +7,8 @@ import 'package:swastik_health_india/app/config/themes/app_theme.dart';
 import 'package:swastik_health_india/app/constans/app_constants.dart';
 import 'package:swastik_health_india/app/features/dashboard/models/adminlist.dart';
 
+import '../../../../utils/helpers/focuse_node.dart';
+
 class AddAdminScreen extends StatefulWidget {
   const AddAdminScreen({Key? key}) : super(key: key);
 
@@ -20,8 +22,14 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _cnfpasswordController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
-
+  bool _loading = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+   final FocusNode _passwordFocusnode = FocusNode();
+   final FocusNode _fullNameFocusnode = FocusNode();
+   final FocusNode _emailFocusnode = FocusNode();
+   final FocusNode _cnfpassFocusnode = FocusNode();
+   final FocusNode _mobileFocusnode = FocusNode();
+   final FocusNode _addadmin = FocusNode();
 
   @override
   void dispose() {
@@ -30,6 +38,8 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
   }
 
   Future<void> createAdmin(_fullName, _email, _mobile, _password) async {
+      showLoadingDialog(context);
+
     DateTime now = DateTime.now();
     String formattedDate = now.toIso8601String();
    
@@ -52,6 +62,8 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
+         dismissLoadingDialog(context);
+
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -66,6 +78,8 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
         _cnfpasswordController.clear();
 
       } else {
+         dismissLoadingDialog(context);
+
         // Show error message if request fails
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -75,6 +89,8 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
         );
       }
     } catch (e) {
+         dismissLoadingDialog(context);
+
       // Show error message if exception occurs
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -84,6 +100,35 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
       );
     }
   }
+
+void showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Prevents user from dismissing the dialog
+    builder: (BuildContext context) {
+      return const AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text(
+              "Creating Admin...",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void dismissLoadingDialog(BuildContext context) {
+  Navigator.pop(context); // Close the dialog
+}
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +157,12 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
+                  focusNode: _fullNameFocusnode,
+                  onFieldSubmitted: (value) {
+                    fieldFocusChange(
+                        context, _fullNameFocusnode, _emailFocusnode);
+                  },
+                  // onEditingComplete: () => FocusScope.of(context).requestFocus(_companyemailFocusNode),
                   controller: _fullNameController,
                   decoration: const InputDecoration(
                     labelText: 'Full Name',
@@ -126,6 +177,11 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
+                  focusNode: _emailFocusnode,
+                  onFieldSubmitted: (value) {
+                    fieldFocusChange(
+                        context,  _emailFocusnode, _mobileFocusnode);
+                  },
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'Email',
@@ -144,6 +200,11 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
+                  focusNode: _mobileFocusnode,
+                  onFieldSubmitted: (value) {
+                    fieldFocusChange(
+                        context, _mobileFocusnode,_passwordFocusnode);
+                  },
                   controller: _mobileController,
                   decoration: const InputDecoration(
                     labelText: 'Mobile No',
@@ -162,6 +223,11 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
+                  focusNode: _passwordFocusnode,
+                  onFieldSubmitted: (value) {
+                    fieldFocusChange(
+                        context, _passwordFocusnode, _cnfpassFocusnode);
+                  },
                   controller: _passwordController,
                   obscureText: true,
                   decoration: const InputDecoration(
@@ -180,6 +246,11 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
+                  focusNode: _cnfpassFocusnode,
+                  onFieldSubmitted: (value) {
+                    fieldFocusChange(
+                        context, _cnfpassFocusnode, _addadmin);
+                  },
                   controller: _cnfpasswordController,
                   obscureText: true,
                   decoration: const InputDecoration(
@@ -240,6 +311,7 @@ class _AddAdminScreenState extends State<AddAdminScreen> {
 
                     Material(
                       child: InkWell(
+                        focusNode: _addadmin,
                         onTap: () {
                           final form = _formKey.currentState;
                           if (form!.validate()) {

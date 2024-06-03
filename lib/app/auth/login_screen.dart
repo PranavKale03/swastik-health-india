@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:swastik_health_india/app/auth/responsive_widget.dart';
 import 'package:swastik_health_india/app/constans/app_constants.dart';
@@ -21,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   String selectedRole = "Admin";
+  // bool _loading = false;
 
   Future<void> login() async {
     if (emailController.text.isEmpty) {
@@ -42,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
+
     if (passwordController.text.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -51,7 +54,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
+
+    // setState(() {
+    //   _loading = true;
+    // });
+
     try {
+      showLoadingDialog(context);
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
       String uri;
@@ -81,6 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (response.statusCode == 200) {
+         dismissLoadingDialog(context);
         final responseData = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -108,6 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Get.to(const DoctorDashboardScreen());
         }
       } else {
+         dismissLoadingDialog(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(json.decode(response.body)['message']),
@@ -116,6 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
+       dismissLoadingDialog(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString()),
@@ -124,6 +136,33 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
+
+  
+void showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Prevents user from dismissing the dialog
+    builder: (BuildContext context) {
+      return Dialog(
+        backgroundColor: Colors.transparent, // Make the background transparent
+        elevation: 0, // Remove shadow
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Lottie.asset(
+              'assets/lotties/loader.json',
+              height: 250,
+              width: 250,
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+void dismissLoadingDialog(BuildContext context) {
+  Navigator.pop(context); // Close the dialog
+}
 
   @override
   Widget build(BuildContext context) {

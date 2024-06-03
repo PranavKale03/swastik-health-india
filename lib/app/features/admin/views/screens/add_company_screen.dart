@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:swastik_health_india/app/config/themes/app_theme.dart';
 import 'package:swastik_health_india/app/constans/app_constants.dart';
 import 'package:swastik_health_india/app/features/admin/models/company.dart';
@@ -23,6 +24,8 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
   final _companyemailFocusNode = FocusNode();
   final _companyaddressFocusNode = FocusNode();
   final _companymobileFocusNode = FocusNode();
+  final _submit = FocusNode();
+
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   // List<Map<String, String>> employees = [];
@@ -38,6 +41,8 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
   }
 
   Future<void> sendDataToApi() async {
+      showLoadingDialog(context);
+
     DateTime now = DateTime.now();
     String formattedDate = now.toIso8601String();
     try {
@@ -59,6 +64,7 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
       );
 
       if (response.statusCode == 200) {
+       dismissLoadingDialog(context);
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -74,6 +80,7 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
         _companymobile.clear();
         setState(() {});
       } else {
+       dismissLoadingDialog(context);
         // Show error message if request fails
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -84,6 +91,7 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
         );
       }
     } catch (e) {
+       dismissLoadingDialog(context);
       // Show error message if exception occurs
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -93,6 +101,32 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
       );
     }
   }
+void showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Prevents user from dismissing the dialog
+    builder: (BuildContext context) {
+      return Dialog(
+        backgroundColor: Colors.transparent, // Make the background transparent
+        elevation: 0, // Remove shadow
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Lottie.asset(
+              'assets/lotties/loader.json',
+              height: 250,
+              width: 250,
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void dismissLoadingDialog(BuildContext context) {
+  Navigator.pop(context); // Close the dialog
+}
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +222,7 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
                   focusNode: _companyaddressFocusNode,
                   onFieldSubmitted: (value) {
                     fieldFocusChange(context, _companyaddressFocusNode,
-                        _companyaddressFocusNode);
+                        _submit);
                   },
                   controller: _companyaddress,
                   decoration: const InputDecoration(
@@ -248,6 +282,7 @@ class _AddcompanyScreenState extends State<AddCompanyScreen> {
                     const SizedBox(width: 16),
                     Material(
                       child: InkWell(
+                        focusNode: _submit,
                         onTap: () {
                           final form = _formKey.currentState;
                           if (form!.validate()) {
