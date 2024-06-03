@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:swastik_health_india/app/config/themes/app_theme.dart';
 import 'package:swastik_health_india/app/constans/app_constants.dart';
@@ -51,13 +52,44 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
     super.dispose();
   }
 
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevents user from dismissing the dialog
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor:
+              Colors.transparent, // Make the background transparent
+          elevation: 0, // Remove shadow
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/lotties/loader.json',
+                height: 250,
+                width: 250,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void dismissLoadingDialog(BuildContext context) {
+    Navigator.pop(context); // Close the dialog
+  }
+
   Future<void> sendDataToApi() async {
     // DateTime now = DateTime.now();
     // String formattedDate = now.toIso8601String();
+    showLoadingDialog(context);
+
     SharedPreferences pref = await SharedPreferences.getInstance();
     // print("bbbbbbbbbbbbbbbbbbbbb"+pref.getString('id').toString());
     try {
-      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/create');
+      final url = Uri.parse(
+          'https://swastik-health-india-api.onrender.com/api/labtech/create');
       final jsonData = {
         'name': _drName.text,
         'email': _dremail.text,
@@ -75,6 +107,7 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
       );
 
       if (response.statusCode == 200) {
+        dismissLoadingDialog(context);
         final responseData = json.decode(response.body);
         final labTechId = responseData['_id'];
 
@@ -96,6 +129,8 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
         _drcnfpassword.clear();
         setState(() {});
       } else {
+        dismissLoadingDialog(context);
+
         // Show error message if request fails
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -106,6 +141,8 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
         );
       }
     } catch (e) {
+      dismissLoadingDialog(context);
+
       // Show error message if exception occurs
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -117,11 +154,16 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
   }
 
   Future<void> assignCompaniesToLabTech(String labTechId) async {
-    final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/assign');
+    final url = Uri.parse(
+        'https://swastik-health-india-api.onrender.com/api/labtech/assign');
     for (var company in _assignedCompanies) {
       final jsonData = {
         'company_id': company['company_id'],
         'lab_technician_id': labTechId,
+        'audiometry_test': company['audiometry_test'],
+        'vision_test': company['vision_test'],
+        'lungfunction_test': company['lungfunction_test'],
+        'body_composition_test': company['body_composition_test'],
       };
 
       final response = await http.post(
@@ -350,8 +392,8 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
                   //   fieldFocusChange(
                   //       context, _companyNameFocusNode, _companyemailFocusNode);
                   // },
-                  onEditingComplete: () => FocusScope.of(context)
-                      .requestFocus(_dremailFocusNode),
+                  onEditingComplete: () =>
+                      FocusScope.of(context).requestFocus(_dremailFocusNode),
                   controller: _drName,
                   decoration: const InputDecoration(
                     labelText: 'Lab Tech Name',
@@ -368,8 +410,8 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
                 TextFormField(
                   focusNode: _dremailFocusNode,
                   onFieldSubmitted: (value) {
-                    fieldFocusChange(context, _dremailFocusNode,
-                        _drmobileFocusNode);
+                    fieldFocusChange(
+                        context, _dremailFocusNode, _drmobileFocusNode);
                   },
                   controller: _dremail,
                   decoration: const InputDecoration(
@@ -390,8 +432,8 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
                 TextFormField(
                   focusNode: _drmobileFocusNode,
                   onFieldSubmitted: (value) {
-                    fieldFocusChange(context, _drmobileFocusNode,
-                        _draddressFocusNode);
+                    fieldFocusChange(
+                        context, _drmobileFocusNode, _draddressFocusNode);
                   },
                   controller: _drmobile,
                   decoration: const InputDecoration(
@@ -412,8 +454,8 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
                 TextFormField(
                   focusNode: _draddressFocusNode,
                   onFieldSubmitted: (value) {
-                    fieldFocusChange(context, _draddressFocusNode,
-                        _drpasswordFocusNode);
+                    fieldFocusChange(
+                        context, _draddressFocusNode, _drpasswordFocusNode);
                   },
                   controller: _draddress,
                   decoration: const InputDecoration(
@@ -431,8 +473,8 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
                 TextFormField(
                   focusNode: _drpasswordFocusNode,
                   onFieldSubmitted: (value) {
-                    fieldFocusChange(context, _drpasswordFocusNode,
-                        _drpasswordcnfFocusNode);
+                    fieldFocusChange(
+                        context, _drpasswordFocusNode, _drpasswordcnfFocusNode);
                   },
                   controller: _drpassword,
                   decoration: const InputDecoration(
@@ -450,8 +492,8 @@ class _AddLabTechScreenState extends State<AddLabTechScreen> {
                 TextFormField(
                   focusNode: _drpasswordcnfFocusNode,
                   onFieldSubmitted: (value) {
-                    fieldFocusChange(context, _drpasswordcnfFocusNode,
-                        _drsaveFocusNode);
+                    fieldFocusChange(
+                        context, _drpasswordcnfFocusNode, _drsaveFocusNode);
                   },
                   controller: _drcnfpassword,
                   decoration: const InputDecoration(
@@ -696,12 +738,16 @@ class _ManageLabTechDialogState extends State<ManageLabTechDialog> {
   }
 
   Future<void> _fetchAssignedCompanies() async {
+    showLoadingDialog(context);
+
     final List<CompanyData> companies = [];
     for (String companyId in _selectedCompanies) {
       try {
         final response = await http.get(Uri.parse(
             'https://swastik-health-india-api.onrender.com/api/company/getcompany?id=$companyId'));
         if (response.statusCode == 200) {
+          dismissLoadingDialog(context);
+
           final responseData = json.decode(response.body);
           companies.add(CompanyData.fromJson(responseData));
         }
@@ -861,9 +907,10 @@ class _ManageLabTechDialogState extends State<ManageLabTechDialog> {
                   Align(
                     alignment: Alignment.bottomRight,
                     child: ElevatedButton(
-                      onPressed: () {
-                        assignCompaniesToLabTech(lab_technician_id);
-                      }, child: const Text("Assign Company")),
+                        onPressed: () {
+                          assignCompaniesToLabTech(lab_technician_id);
+                        },
+                        child: const Text("Assign Company")),
                   ),
                   const SizedBox(
                     height: 10,
@@ -892,15 +939,23 @@ class _ManageLabTechDialogState extends State<ManageLabTechDialog> {
           ),
         ])));
   }
+
   Future<void> assignCompaniesToLabTech(String labTechId) async {
-    final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/assign');
+    showLoadingDialog(context);
+
+    final url = Uri.parse(
+        'https://swastik-health-india-api.onrender.com/api/labtech/assign');
     // print(_assignedCompanies);
     for (var company in _assignedCompanies) {
       final jsonData = {
         'company_id': company['company_id'],
         'lab_technician_id': labTechId,
+        'audiometry_test': company['audiometry_test'],
+        'vision_test': company['vision_test'],
+        'lungfunction_test': company['lungfunction_test'],
+        'body_composition_test': company['body_composition_test'],
       };
-
+      print(jsonData);
       final response = await http.post(
         url,
         body: json.encode(jsonData),
@@ -908,6 +963,8 @@ class _ManageLabTechDialogState extends State<ManageLabTechDialog> {
       );
 
       if (response.statusCode != 200) {
+        dismissLoadingDialog(context);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -916,10 +973,12 @@ class _ManageLabTechDialogState extends State<ManageLabTechDialog> {
           ),
         );
       } else {
-       setState(() {
-         _selectedCompanies.clear();
-         Navigator.pop(context);
-       });
+        dismissLoadingDialog(context);
+
+        setState(() {
+          _selectedCompanies.clear();
+          Navigator.pop(context);
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -930,6 +989,35 @@ class _ManageLabTechDialogState extends State<ManageLabTechDialog> {
       }
     }
   }
+
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevents user from dismissing the dialog
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor:
+              Colors.transparent, // Make the background transparent
+          elevation: 0, // Remove shadow
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/lotties/loader.json',
+                height: 250,
+                width: 250,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void dismissLoadingDialog(BuildContext context) {
+    Navigator.pop(context); // Close the dialog
+  }
+
   Widget _buildCheckbox(
       String title, bool value, ValueChanged<bool?> onChanged) {
     return Row(

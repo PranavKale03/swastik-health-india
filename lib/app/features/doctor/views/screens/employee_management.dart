@@ -6,7 +6,7 @@ import 'package:swastik_health_india/app/config/themes/app_theme.dart';
 import 'package:swastik_health_india/app/constans/app_constants.dart';
 import 'package:swastik_health_india/app/features/admin/models/company.dart';
 import 'package:swastik_health_india/app/features/admin/models/employee.dart';
-import 'package:swastik_health_india/app/features/lab_tech/views/screens/EmployeeManagement/employee_form.dart';
+import 'package:swastik_health_india/app/features/lab_tech/views/screens/EmployeeTestForms/complete_employee_form.dart';
 DataRow recentFileDataRow(EmployeesModel fileInfo) {
   return DataRow(
     cells: [

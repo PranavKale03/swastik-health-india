@@ -122,6 +122,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       final jsonData = {
         'company_id': company['company_id'],
         'doctor_id': DoctorId,
+        'audiometry_test': company['audiometry_test'],
+        'vision_test': company['vision_test'],
+        'lungfunction_test': company['lungfunction_test'],
+        'body_composition_test': company['body_composition_test'],
       };
 
       final response = await http.post(
@@ -892,13 +896,13 @@ class _ManageDoctorDialogState extends State<ManageDoctorDialog> {
           ),
         ])));
   }
-  Future<void> assignCompaniesToLabTech(String labTechId) async {
+  Future<void> assignCompaniesToLabTech(String DrId) async {
     final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/assign');
     // print(_assignedCompanies);
     for (var company in _assignedCompanies) {
       final jsonData = {
         'company_id': company['company_id'],
-        'lab_technician_id': labTechId,
+        'lab_technician_id': DrId,
       };
 
       final response = await http.post(

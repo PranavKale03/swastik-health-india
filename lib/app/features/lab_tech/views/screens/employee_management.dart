@@ -1,32 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:swastik_health_india/app/config/themes/app_theme.dart';
 import 'package:swastik_health_india/app/constans/app_constants.dart';
 import 'package:swastik_health_india/app/features/admin/models/company.dart';
-import 'package:swastik_health_india/app/features/admin/models/employee.dart';
-import 'package:swastik_health_india/app/features/lab_tech/views/screens/EmployeeManagement/employee_form.dart';
-DataRow recentFileDataRow(EmployeesModel fileInfo) {
-  return DataRow(
-    cells: [
-      DataCell(
-        Row(
-          children: [
-            const Icon(Icons.person),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-              child: Text(fileInfo.name!),
-            ),
-          ],
-        ),
-      ),
-      DataCell(Text(fileInfo.age!)),
-      DataCell(Text(fileInfo.email!)),
-      DataCell(Text(fileInfo.gender!)),
-    ],
-  );
-}
+import 'package:swastik_health_india/app/features/lab_tech/models/employee.dart';
+import 'package:swastik_health_india/app/features/lab_tech/views/screens/EmployeeTestForms/audiometry_test_form.dart';
+import 'package:swastik_health_india/app/features/lab_tech/views/screens/EmployeeTestForms/body_mass_index_form.dart';
+import 'package:swastik_health_india/app/features/lab_tech/views/screens/EmployeeTestForms/lung_function_test_form.dart';
+import 'package:swastik_health_india/app/features/lab_tech/views/screens/EmployeeTestForms/vision_test_form.dart';
 
 class AssignedCompanySelection extends StatefulWidget {
   const AssignedCompanySelection({Key? key}) : super(key: key);
@@ -41,29 +25,87 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
   List<CompanyData> _companies = [];
   String? _selectedCompany;
   List<EmployeesModel> _employees = [];
+  bool _audiometryTest = false;
+  bool _visionTest = false;
+  bool _lungFunctionTest = false;
+  bool _bodyCompositionTest = false;
+  // ignore: prefer_final_fields
+  List<Map<String, dynamic>> _assignedCompanies = [];
 
   @override
   void initState() {
     super.initState();
-    fetchAllCompanies();
+    fetchAssignedCompanies();
   }
 
-  Future<void> fetchAllCompanies() async {
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevents user from dismissing the dialog
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor:
+              Colors.transparent, // Make the background transparent
+          elevation: 0, // Remove shadow
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/lotties/loader.json',
+                height: 250,
+                width: 250,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void dismissLoadingDialog(BuildContext context) {
+    Navigator.pop(context); // Close the dialog
+  }
+
+  Future<void> fetchAssignedCompanies() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String? id = pref.getString('id');
-    try {
-      final url = Uri.parse('https://swastik-health-india-api.onrender.com/api/labtech/getuser?id=$id');
-      final response = await http.get(url);
+    if (id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User ID is not available.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
+    try {
+      final url = Uri.parse(
+          'https://swastik-health-india-api.onrender.com/api/labtech/getuser?id=$id');
+      final response = await http.get(url);
+      // print(response.body);
       if (response.statusCode == 200) {
         final dynamic userData = json.decode(response.body);
-        if (userData != null) {
+        // print(userData); // Ensure this output matches expected structure
+
+        if (userData != null && userData['assigned_companies'] != null) {
           final assignedCompanies =
               List<Map<String, dynamic>>.from(userData['assigned_companies']);
+          // print('dsfszdd');
+
+          // print(assignedCompanies);
           setState(() {
             _companies = assignedCompanies
-                .map((json) => CompanyData.fromJson(json))
+                .map((companyAssignment) =>
+                    CompanyData.fromJson(companyAssignment['company']))
                 .toList();
+            _assignedCompanies = assignedCompanies;
+            // print('hhhhhhhhhhhhhhhhhhh')  ;
+
+            // print(_assignedCompanies)  ;
+            if (_companies.isNotEmpty) {
+              _updateTestVisibility(_companies.first.id);
+            }
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -93,14 +135,18 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
   }
 
   Future<void> fetchEmployeesByCompanyId(String companyId) async {
+    showLoadingDialog(context);
+
     try {
       final url = Uri.parse(
           'https://swastik-health-india-api.onrender.com/api/company/getcompany?id=$companyId');
       final response =
           await http.get(url, headers: {'Content-Type': 'application/json'});
       if (response.statusCode == 200) {
+        dismissLoadingDialog(context);
+
         final dynamic companyData = json.decode(response.body);
-        if (companyData != null) {
+        if (companyData != null && companyData['employees'] != null) {
           final List<dynamic> employeeList = companyData['employees'];
           setState(() {
             _employees = employeeList
@@ -108,6 +154,8 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
                 .toList();
           });
         } else {
+          dismissLoadingDialog(context);
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('No employees found for this company.'),
@@ -116,6 +164,8 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
           );
         }
       } else {
+        dismissLoadingDialog(context);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -125,6 +175,8 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
         );
       }
     } catch (e) {
+      dismissLoadingDialog(context);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to load employees. Exception: $e'),
@@ -134,33 +186,35 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
     }
   }
 
- void _navigateToEmployeeForm(String employeeId) async {
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => CompleteEmployeeForm(
-        resetForm: () {},
-        saveEmployees: () {},
-        employeeId: employeeId, // Pass the employeeId directly
-      ), 
-    ),
-  );
-  // Handle navigation back
-  fetchAllCompanies(); // Reload data after navigating back
-}
-
+  void _updateTestVisibility(String? companyId) {
+    if (companyId != null) {
+      final company = _assignedCompanies.firstWhere(
+          (element) => element['company']['_id'] == companyId,
+          orElse: () => {});
+      setState(() {
+        _audiometryTest = company['audiometry_test'] ?? false;
+        _visionTest = company['vision_test'] ?? false;
+        _lungFunctionTest = company['lungfunction_test'] ?? false;
+        _bodyCompositionTest = company['body_composition_test'] ?? false;
+      });
+      // print("Audiometry Test: $_audiometryTest");
+      // print("Vision Test: $_visionTest");
+      // print("Lung Function Test: $_lungFunctionTest");
+      // print("Body Composition Test: $_bodyCompositionTest");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      elevation: 1, // Set the elevation value as needed
+      elevation: 1,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.all(16.0), // Assuming defaultPadding is 16.0
+        padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
+         color: Theme.of(context).brightness == Brightness.dark
               ? AppTheme.basic.canvasColor // Use canvasColor from dark theme
-              : AppTheme.light.canvasColor, // Use canvasColor from light theme
+              : AppTheme.light.canvasColor,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
         ),
         child: Form(
@@ -197,6 +251,7 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
                       onChanged: (String? newValue) {
                         setState(() {
                           _selectedCompany = newValue;
+                          _updateTestVisibility(newValue);
                         });
                       },
                       validator: (value) {
@@ -220,24 +275,16 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
                       child: Ink(
                         width: 200,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24.0,
-                            vertical: 14.0), // Adjust as needed
+                            horizontal: 24.0, vertical: 14.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16.0),
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? AppTheme.basic
-                                  .primaryColorDark // Use primaryColorDark from dark theme
-                              : AppTheme.light
-                                  .primaryColorLight, // Use primaryColorLight from light theme
+                          color: Theme.of(context).primaryColor,
                         ),
-                        child: const Center(
-                          child: Text(
-                            'Search',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16.0,
-                            ),
-                          ),
+                        child: const Text(
+                          'Fetch Employees',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -245,38 +292,42 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
                 ],
               ),
               const SizedBox(height: 20),
-              Text(
-                "Recent Employees/Patients",
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              SizedBox(
-                width: double.infinity,
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 child: DataTable(
-                  columnSpacing: defaultPadding,
-                  columns: const [
-                    DataColumn(
+                  columns: [
+                    const DataColumn(
                       label: Text("Name"),
                     ),
-                    DataColumn(
+                    const DataColumn(
                       label: Text("Age"),
                     ),
-                    DataColumn(
-                      label: Text("Email"),
-                    ),
-                    DataColumn(
+                    const DataColumn(
                       label: Text("Gender"),
                     ),
+                    if (_audiometryTest)
+                      const DataColumn(
+                        label: Text("Audiometry Test"),
+                      ),
+                    if (_visionTest)
+                      const DataColumn(
+                        label: Text("Vision Test"),
+                      ),
+                    if (_lungFunctionTest)
+                      const DataColumn(
+                        label: Text("Lung Function Test"),
+                      ),
+                    if (_bodyCompositionTest)
+                      const DataColumn(
+                        label: Text("Body Composition Test"),
+                      ),
                   ],
                   rows: List.generate(
                     _employees.length,
                     (index) => DataRow(
-                      onLongPress: () =>
-                          _navigateToEmployeeForm(_employees[index].id.toString()),
                       cells: [
-                        DataCell(GestureDetector(
-                          onTap: (() =>
-                              _navigateToEmployeeForm(_employees[index].id.toString())),
-                          child: Row(
+                        DataCell(
+                          Row(
                             children: [
                               const Icon(Icons.person),
                               Padding(
@@ -286,19 +337,101 @@ class _AssignedCompanySelectionState extends State<AssignedCompanySelection> {
                               ),
                             ],
                           ),
-                        )),
-                        DataCell(GestureDetector(
-                            onTap: (() =>
-                                _navigateToEmployeeForm(_employees[index].id.toString())),
-                            child: Text(_employees[index].age!))),
-                        DataCell(GestureDetector(
-                            onTap: (() =>
-                                _navigateToEmployeeForm(_employees[index].id.toString())),
-                            child: Text(_employees[index].email!))),
-                        DataCell(GestureDetector(
-                            onTap: (() =>
-                                _navigateToEmployeeForm(_employees[index].id.toString())),
-                            child: Text(_employees[index].gender!))),
+                        ),
+                        DataCell(Text(_employees[index].age!)),
+                        DataCell(Text(_employees[index].gender!)),
+                        if (_bodyCompositionTest)
+                          DataCell(
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _employees[index].visionTest
+                                      ? const Color.fromARGB(255, 22, 111, 25)
+                                      : const Color.fromARGB(255, 211, 127, 0),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => BodyMassIndexForm(
+                                        resetForm: () {},
+                                        saveEmployees: () {},
+                                        employeeId:
+                                            _employees[index].id.toString(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Body Composition Test')),
+                          ),
+                        if (_audiometryTest)
+                          DataCell(
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _employees[index].visionTest
+                                      ? const Color.fromARGB(255, 22, 111, 25)
+                                      : const Color.fromARGB(255, 211, 127, 0),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AudiometryForm(
+                                        resetForm: () {},
+                                        saveEmployees: () {},
+                                        employeeId:
+                                            _employees[index].id.toString(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Audiometry Test')),
+                          ),
+                        if (_lungFunctionTest)
+                          DataCell(
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _employees[index].visionTest
+                                      ? const Color.fromARGB(255, 22, 111, 25)
+                                      : const Color.fromARGB(255, 211, 127, 0),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LungFunctionForm(
+                                        resetForm: () {},
+                                        saveEmployees: () {},
+                                        employeeId:
+                                            _employees[index].id.toString(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Lung Function Test')),
+                          ),
+                        if (_visionTest)
+                          DataCell(
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _employees[index].visionTest
+                                      ? const Color.fromARGB(255, 22, 111, 25)
+                                      : const Color.fromARGB(255, 211, 127, 0),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => VisionTestForm(
+                                        resetForm: () {},
+                                        saveEmployees: () {},
+                                        employeeId:
+                                            _employees[index].id.toString(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Vision Test')),
+                          ),
                       ],
                     ),
                   ),
